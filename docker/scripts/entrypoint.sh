@@ -7,7 +7,7 @@ MARKER_FILE="/var/.entrypoint_initialized"
 # 初回起動チェック
 if [ ! -f "$MARKER_FILE" ]; then
     # 初回起動時処理
-
+    
     # git pull モード指定
     git config --global pull.rebase true
     # git pull
@@ -22,16 +22,15 @@ if [ -d /var/custom ]; then
   for script in /var/custom/*.sh; do
     if [ -f "$script" ]; then
       chmod +x "$script"
-      "$script"
+      bash "$script" || echo "[WARN] $script failed"
     fi
   done
 fi
 
-# condaの初期化
-source /opt/conda/etc/profile.d/conda.sh
 
 # escargot環境のアクティベート
-conda activate escargot
+source /root/.bashrc
+micromamba activate escargot
 # ディレクトリ移動
 cd /home/dev/github/escargot
 if [ -f /home/dev/github/escargot/manage.py ]; then

@@ -1,31 +1,28 @@
-FROM ubuntu:24.04
+FROM python:3.13.3-slim
+
+# 対話式コンソールの処理をスキップ
+ENV DEBIAN_FRONTEND=noninteractive
 
 # 使用するポートの宣言（Web/Django）
 EXPOSE 8000
 
 # 必要パッケージのインストール
 RUN apt update && apt upgrade -y && \
-    apt install -y git wget nginx bzip2 && \
+    apt install -y git curl bzip2 && \
     apt autoremove -y && apt autoclean -y
 
-# Miniforge のインストール（バージョン固定）
-RUN wget --no-check-certificate https://github.com/conda-forge/miniforge/releases/download/23.11.0-0/Miniforge3-Linux-x86_64.sh && \
-    bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda && \
-    rm Miniforge3-Linux-x86_64.sh && \
-    /opt/conda/bin/conda init && /opt/conda/bin/conda clean --all --yes
+# Micromamba のインストール
+RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj -C /usr/local/bin --strip-components=1 bin/micromamba
+
 # pipでインストールするパッケージリストのコピー
 COPY docker/requirements.txt /root/requirements.txt
-# Conda環境作成と依存インストール（まとめて実行）
-RUN /bin/bash -c "source /opt/conda/etc/profile.d/conda.sh && \
-    conda create -n escargot python=3.12.10 -y && \
-    conda activate escargot && \
-    pip install --no-cache-dir -r /root/requirements.txt && \
-    conda clean --all --yes"
-# 環境変数の設定
-ENV PATH="/opt/conda/bin:$PATH"
-# Conda環境を有効にするためのコマンドを追記
-RUN sed -i '$a conda activate escargot' /root/.bashrc
 
+# micromamba で仮想環境作成（escargot用）
+RUN micromamba create -y -n escargot python=3.13 && \
+    micromamba run -n escargot python -m pip install --no-cache-dir -r /root/requirements.txt && \
+    micromamba clean --all --yes && \
+    micromamba shell init -s bash && \
+    sed -i '$a micromamba activate escargot' /root/.bashrc
 
 # キャッシュ等削除
 RUN rm -rf /tmp/* /var/tmp/* /root/.cache/*

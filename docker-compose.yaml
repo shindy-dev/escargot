@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  escargot:
+    container_name: escargot
+    image: ghcr.io/shindy-dev/escargot:latest
+    restart: always
+    ports:
+      - "8000:8000"
+    hostname: escargot
+    platform: linux/amd64
+    stdin_open: true
+    tty: true
