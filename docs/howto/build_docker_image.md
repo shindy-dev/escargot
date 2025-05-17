@@ -1,7 +1,7 @@
 # How to build Docker Image & Push to Github Packages
 
 ## Create Dockerfile
-[Dockerfile](../Dockerfile) - [About this file (Written by AI)](about_dockerfile.md)
+[Dockerfile](../../Dockerfile) - [About this file (Written by AI)](../about/about_dockerfile.md)
 
 ## Create Image
 Dockerfileのあるディレクトリで以下実行
