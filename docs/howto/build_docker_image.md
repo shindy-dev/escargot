@@ -1,7 +1,7 @@
 # How to build Docker Image & Push to Github Packages
 
 ## Create Dockerfile
-[Dockerfile](../Dockerfile) - [About this file (Written by AI)](about_Dockerfile.md)
+[Dockerfile](../Dockerfile) - [About this file (Written by AI)](about_dockerfile.md)
 
 ## Create Image
 Dockerfileのあるディレクトリで以下実行
@@ -18,21 +18,18 @@ docker build . -t escargot:latest  --platform=linux/amd64
 - write:packages
 - delete:packages
 
----
-
 ### 2. Push Image
 ```bash
 # dockerにログイン
 echo <your-token> | docker login ghcr.io -u <your-username> --password-stdin
 
 # ローカルのイメージをリポジトリに紐付け
-docker tag mydb2:<tag> ghcr.io/<your-username>/<image-name>:<tag>
+docker tag escargot:<tag> ghcr.io/<your-username>/<image-name>:<tag>
 
 # pushを実行
 docker push ghcr.io/<your-username>/<image-name>:<tag>
 ```
 
----
 
 ### 3. Confirm Image Push
 `https://github.com/<your-username>?tab=packages`にアクセスし、Pushされているか確認

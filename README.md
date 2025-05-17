@@ -3,18 +3,18 @@
 ## Abstract
 Django勉強用リポジトリ  
 ここには環境構築から実際のサイト作成手順を具体的に記載する  
-Djangoの概要については[こちら](docs/about_Django.md)（AIまとめ）
+Djangoの概要については[こちら](docs/about/django5.2.1/part1.md)（AI調べ）
+
 
 ## Environment
-- ### [Docker Desktop](https://www.docker.com/ja-jp/products/docker-desktop/) on macOS
+- ### [Docker Desktop](https://www.docker.com/ja-jp/products/docker-desktop/)
     version 28.0.4, build b8034c0
+    今回使用するイメージ：[ghcr.io/shindy-dev/escargot](https://github.com/users/shindy-dev/packages/container/package/escargot)  
 
-    今回使用するイメージ：[shindy0810/escargot](https://hub.docker.com/r/shindy0810/escargot)  
+    tips. [How to build Docker Image](docs/howto/build_docker_image.md)
 
-    tips. [How to build Docker Image](docs/how2_build_DockerImage.md)
-
-- ### [Miniforge](https://github.com/conda-forge/miniforge)
-    conda 23.11.0  
+- ### [Micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html)
+    version 2.1.1  
     ※今回使用するコンテナにインストール済みのためセットアップ不要  
 
     あくまでPythonのバージョン管理として利用し、パッケージ管理はpipで行う
@@ -25,114 +25,38 @@ Djangoの概要については[こちら](docs/about_Django.md)（AIまとめ）
     * anacondaだと肥大化するため
 
 - ### [Python](https://www.python.org/)
-    version 3.12.10  
+    version 3.13.3  
     ※今回使用するコンテナにインストール済みのためセットアップ不要  
-
-    2025年5月時点でDjango4.2が対応している最新バージョンであったため当バージョンを採用
+    2025年5月時点での最新バージョンを採用
 
 - ### Pythonライブラリ
     ※今回使用するコンテナにインストール済みのためセットアップ不要  
     - ### [django](https://github.com/django/django)==4.2.21
         webアプリのフレームワーク  
-        2025年5月時点で最新のバージョンは5.2であるが、ibm_db_djangoの対応バージョンが4.2までであるため、互換性を考慮して当バージョンを採用
-
-    - ### [ibm_db](https://github.com/ibmdb/python-ibmdb)==3.2.6
-        Db2データベースとPythonを接続するための公式ドライバ  
-        2025年5月時点で最新バージョンを採用  
-        [wiki](https://github.com/ibmdb/python-ibmdb/wiki/APIs)
-
-    - ### [ibm_db_django](https://github.com/ibmdb/python-ibmdb-django)==1.5.3.0
-        DjangoからDb2データベースへ接続するための公式バックエンドドライバ
-        2025年5月時点で最新バージョンを採用
+        2025年5月時点での最新のバージョンを採用
 
     - ### [build](https://github.com/pypa/build)==1.2.2.post1
         Pythonパッケージのビルド用ライブラリ  
-        2025年5月時点で最新バージョンを採用
+        2025年5月時点での最新バージョンを採用
 
 ## How to build Environment
-### 1. Pull Image
-```bash
-docker pull shindy0810/escargot:latest --platform=linux/amd64
-```
-
----
-
-### 2. Create *.env* for Database
-環境依存の設定を.envファイル（任意のパスに作成）に記載する  
-※Databaseを使用するために必要な設定
-```
-USER=dbuser
-PASSWORD=dbuser
-DBNAME=TESTDB
-HOST=mydb2
-PORT=50000
-PCONNECT=True
-```
-
-項目説明  
-- USER は DBへ接続するためのユーザー名を指定します。
-- PASSWORD は、 DBへ接続するためのパスワードを指定します。
-- DBNAME は、指定された名前のDBへ接続します。
-- HOST は、指定されたIPでDBへ接続します。
-- PORT は、指定されたポートでDBへ接続します。
-- PCONNECT は永続的接続（persistent connection） を有効にするかどうかを選択します。
----
-
-### 3. Boot Container
-
-#### Create Custome Network
-```bash
-# コンテナ間通信用ネットワーク作成
-docker network create mynet
-```
-
-#### Run Container
+### Compose Container
 ```bash
 # デーモンプロセスとしてコンテナ起動
-docker run -itd -h escargot --name escargot --restart=always --privileged -p 8000:8000 --env-file ~/.env --network mynet --platform=linux/amd64 shindy0810/escargot:latest
+docker-compose up -d
 ```
-- `-itd`: インタラクティブ・バックグラウンドモード
-- `-h escargot`: ホスト名の設定
-- `--name`: コンテナ名を `escargot` に指定
-- `--restart=always`: 自動再起動設定
-- `--privileged`: 特権モードで起動
-- `-p`: ポートマッピング(8000はdjangoサーバのポート)
-- `--env-file`: 環境変数を `.env` ファイルから
-- `--network`: ネットワークを指定
-- `--platform`: 明示的にプラットフォームを指定
-- `shindy0810/escargot:latest`: 使用するイメージ
 
----
-
-#### Execute Container
+### Execute Container
 ```bash
 # /bin/bashで実行
-docker exec -it escargot /bin/bash
+docker-compose exec escargot /bin/bash
 ```
 
-#### Remove & Run & Execute Container
-- macOS  
-    ```bash
-    docker stop escargot || true && docker rm escargot || true && \
-    docker run -itd -h escargot --name escargot --restart=always \
-    --privileged -p 8000:8000 --env-file .env --network mynet \
-    --platform=linux/amd64 shindy0810/escargot:latest && \
-    docker exec -it escargot /bin/bash
-    ```
-
-- Windows
-    ```powershell
-    docker stop escargot
-    docker rm escargot
-
-    docker run -itd -h escargot --name escargot --restart=always `
-    --privileged -p 8000:8000 --env-file ".env" --network mynet `
-    --platform=linux/amd64 shindy0810/escargot:latest
-
-    docker exec -it escargot /bin/bash
-    ```
----
-
+### Compose　and Execute Container
+```bash
+# コンテナの再作成
+bash docker-recompose.sh
+```
 
 ## escargotプロジェクト作成プロセス
 `escargot`プロジェクト作成
@@ -143,11 +67,11 @@ django-admin startproject escargot .
 Djangoサーバの初期設定〜起動まで
 ```bash
 # shindbに対してescargotアプリで定義したmodelを反映（modelを更新する度に要実行）
-python manager.py migrate
+python manage.py migrate
 # 管理者ユーザーの作成
-python manager.py createsuperuser
+python manage.py createsuperuser
 # サーバー起動（「0:8000」は「0.0.0.0:8000」と同義）
-python manager.py runserver 0:8000
+python manage.py runserver 0:8000
 ```
 runserver実行後、以下のメッセージが表示されたら起動成功   
 ```
@@ -162,12 +86,12 @@ Starting development server at http://0.0.0.0:8000/
 Quit the server with CONTROL-C.
 ```
 ホストOSから http://localhost:8000/admin/ にアクセスしてページが表示されることを確認
-![admin](docs/adminpage.png)
+![admin](docs/assets/images/adminpage.png)
 
-ホームページ作成
+アプリ作成
 ```bash
-python manage.py startapp home
+python manage.py startapp <app-name>
 ```
 
-## 参考文献一覧
+## 参考文献
 * [Djangoドキュメント](https://docs.djangoproject.com/ja/5.2/)
