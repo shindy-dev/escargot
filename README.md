@@ -8,7 +8,8 @@ Djangoの概要については[こちら](docs/about/django5.2.1/part1.md)（AI�
 
 ## Environment
 - ### [Docker Desktop](https://www.docker.com/ja-jp/products/docker-desktop/)
-    version 28.0.4, build b8034c0
+    version 28.0.4
+
     今回使用するイメージ：[ghcr.io/shindy-dev/escargot](https://github.com/users/shindy-dev/packages/container/package/escargot)  
 
     tips. [How to build Docker Image](docs/howto/build_docker_image.md)
